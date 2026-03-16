@@ -1,0 +1,1 @@
+# degerleme-motoru
