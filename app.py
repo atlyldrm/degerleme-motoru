@@ -69,7 +69,16 @@ def get_valuation(ticker_symbol):
         
         intrinsic_value_equity = intrinsic_value_firm - total_debt + cash
         
-        value_per_share_usd = intrinsic_value_equity / curr_data['shares_outstanding']
+        # Hisse senedi adedini bulmak için esnek arama
+     try:
+         shares_out = curr_data['shares']
+     except:
+         shares_out = ticker.info.get('sharesOutstanding', None)
+
+     if not shares_out:
+         raise ValueError("Hisse adedi (Shares Outstanding) verisi bulunamadı!")
+
+     value_per_share_usd = intrinsic_value_equity / shares_out
         value_per_share_try = value_per_share_usd * exchange_rate
         
         return value_per_share_try, curr_data['last_price']
