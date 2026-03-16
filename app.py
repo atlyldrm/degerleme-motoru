@@ -100,4 +100,10 @@ if st.button("Değerlemeyi Çalıştır"):
         else:
             st.success("Hesaplama Tamamlandı!")
             col1, col2, col3 = st.columns(3)
-            col1.metric("Hesaplanan İçsel Değer", f"{val
+            col1.metric("Hesaplanan İçsel Değer", f"{val_try:.2f} TL")
+            col2.metric("Güncel Piyasa Fiyatı", f"{curr_p:.2f} TL")
+            
+            upside = (val_try / curr_p) - 1
+            col3.metric("Potansiyel Getiri", f"%{upside*100:.2f}", delta=f"%{upside*100:.2f}")
+            
+            st.warning("Benim her zaman söylediğim bir kural: Bu mekanik bir modeldir. Eğer değer, fiyattan çok farklıysa; ya piyasa yanılıyordur ya da senin modele anlattığın hikaye yanlıştır. Model sana düşünmen için bir zemin verir, gerçeği dikte etmez!")
