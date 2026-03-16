@@ -26,7 +26,15 @@ def get_valuation(ticker_symbol):
         exchange_rate = yf.Ticker("USDTRY=X").fast_info['last_price']
         
         # Temel Kalemler (En son açıklanan bilançodan)
-        ebit = income_stmt.loc['EBIT'].iloc[0] / exchange_rate
+        # EBIT'i bulmak için esnek arama (Veri sağlayıcı etiketleme hatalarını önler)
+        if 'EBIT' in income_stmt.index:
+            ebit = income_stmt.loc['EBIT'].iloc[0] / exchange_rate
+        elif 'Operating Income' in income_stmt.index:
+            ebit = income_stmt.loc['Operating Income'].iloc[0] / exchange_rate
+        elif 'Pretax Income' in income_stmt.index:
+            ebit = income_stmt.loc['Pretax Income'].iloc[0] / exchange_rate
+        else:
+            raise ValueError("Gelir tablosunda faaliyet karı kalemi bulunamadı!")
         # Faiz gideri yoksa veya net faiz geliri varsa hata vermemesi için
         try:
             interest_expense = abs(income_stmt.loc['Interest Expense'].iloc[0] / exchange_rate)
