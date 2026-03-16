@@ -25,7 +25,6 @@ def get_valuation(ticker_symbol):
         # Kur Dönüşümü (TRY -> USD) - Tutarlılık Kuralı
         exchange_rate = yf.Ticker("USDTRY=X").fast_info['last_price']
         
-        # Temel Kalemler (En son açıklanan bilançodan)
         # EBIT'i bulmak için esnek arama (Veri sağlayıcı etiketleme hatalarını önler)
         if 'EBIT' in income_stmt.index:
             ebit = income_stmt.loc['EBIT'].iloc[0] / exchange_rate
@@ -35,6 +34,7 @@ def get_valuation(ticker_symbol):
             ebit = income_stmt.loc['Pretax Income'].iloc[0] / exchange_rate
         else:
             raise ValueError("Gelir tablosunda faaliyet karı kalemi bulunamadı!")
+            
         # Faiz gideri yoksa veya net faiz geliri varsa hata vermemesi için
         try:
             interest_expense = abs(income_stmt.loc['Interest Expense'].iloc[0] / exchange_rate)
@@ -70,15 +70,15 @@ def get_valuation(ticker_symbol):
         intrinsic_value_equity = intrinsic_value_firm - total_debt + cash
         
         # Hisse senedi adedini bulmak için esnek arama
-     try:
-         shares_out = curr_data['shares']
-     except:
-         shares_out = ticker.info.get('sharesOutstanding', None)
+        try:
+            shares_out = curr_data['shares']
+        except:
+            shares_out = ticker.info.get('sharesOutstanding', None)
+            
+        if not shares_out:
+            raise ValueError("Hisse adedi (Shares Outstanding) verisi bulunamadı!")
 
-     if not shares_out:
-         raise ValueError("Hisse adedi (Shares Outstanding) verisi bulunamadı!")
-
-     value_per_share_usd = intrinsic_value_equity / shares_out
+        value_per_share_usd = intrinsic_value_equity / shares_out
         value_per_share_try = value_per_share_usd * exchange_rate
         
         return value_per_share_try, curr_data['last_price']
@@ -100,10 +100,4 @@ if st.button("Değerlemeyi Çalıştır"):
         else:
             st.success("Hesaplama Tamamlandı!")
             col1, col2, col3 = st.columns(3)
-            col1.metric("Hesaplanan İçsel Değer", f"{val_try:.2f} TL")
-            col2.metric("Güncel Piyasa Fiyatı", f"{curr_p:.2f} TL")
-            
-            upside = (val_try / curr_p) - 1
-            col3.metric("Potansiyel Getiri", f"%{upside*100:.2f}", delta=f"%{upside*100:.2f}")
-            
-            st.warning("Benim her zaman söylediğim bir kural: Bu mekanik bir modeldir. Eğer değer, fiyattan çok farklıysa; ya piyasa yanılıyordur ya da senin modele anlattığın hikaye yanlıştır. Model sana düşünmen için bir zemin verir, gerçeği dikte etmez!")
+            col1.metric("Hesaplanan İçsel Değer", f"{val
